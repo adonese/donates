@@ -11,9 +11,11 @@
   "dependencies": {
     "@material-ui/core": "latest",
     "clsx": "latest",
+    "jsencrypt": "^3.0.0-rc.1",
     "react": "latest",
     "react-dom": "latest",
-    "react-scripts": "latest"
+    "react-scripts": "latest",
+    "uuid": "^3.3.3"
   },
   "browserslist": {
     "production": [
