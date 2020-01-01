@@ -5,7 +5,8 @@ import Box from '@material-ui/core/Box';
 import Link from '@material-ui/core/Link';
 import ProTip from './ProTip';
 import FormGroup from "@material-ui/core/FormGroup"
-import { Input, InputLabel } from "@material-ui/core"
+import { Input, InputLabel, TextField } from "@material-ui/core"
+import Select from '@material-ui/core/Select';
 import FormHelperText from "@material-ui/core/FormControl"
 import uuid from 'uuid';
 import JSencrypt from "jsencrypt";
@@ -15,8 +16,16 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import PaymentIcon from '@material-ui/icons/Payment';
+import MomentUtils from '@date-io/moment';
+import moment from '@date-io/moment';
 
 import { Button } from '@material-ui/core';
+import {
+  MuiPickersUtilsProvider,
+  KeyboardTimePicker,
+  KeyboardDatePicker,
+} from '@material-ui/pickers';
 
 class DataForm extends React.Component {
   constructor(props) {
@@ -26,7 +35,7 @@ class DataForm extends React.Component {
       username: '',
       error: false,
       message: '',
-      pin: "", pan: "", amount: "", expDate: "", open: true,
+      pin: "", pan: "", amount: "", expDate: "", open: true, disabled: false, selectedMoment: this.props.value
     };
 
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -35,17 +44,27 @@ class DataForm extends React.Component {
     this.handleChangeExpDate = this.handleChangeExpDate.bind(this);
     this.handleChangePan = this.handleChangePan.bind(this);
     this.handleClose = this.handleClose.bind(this);
+    this.handleChangeDonors = this.handleChangeDonors.bind(this);
   }
 
 
   handleChangePin(event) {
     this.setState({ pin: event.target.value });
   }
+
+  handleChangeDonors(event) {
+    // handle donors here
+    this.setState({ toCard: event.target.value });
+  }
   handleChangePan(event) {
     this.setState({ pan: event.target.value });
   }
-  handleChangeExpDate(event) {
-    this.setState({ expDate: event.target.value });
+  handleChangeExpDate(date) {
+    // console.log("the date is ", date.month())
+    let m = date.format("YYMM")
+    console.log("the wanted date is: ", m)
+    this.setState({ expDate: date, selectedMoment: date });
+    console.log("the selected date is", date)
   }
   handleChangeAmount(event) {
     this.setState({ amount: event.target.value });
@@ -104,6 +123,8 @@ class DataForm extends React.Component {
 
     let key = localStorage.getItem("key")
     const [ipin, id] = this.generateIPin(this.state.pin, key)
+
+
     // console.log('A name was submitted: ' + data.data);
     fetch('https://beta.soluspay.net/api/consumer/p2p', {
       method: 'POST',
@@ -146,14 +167,16 @@ class DataForm extends React.Component {
       // this.setState({error: true, message: error.message})
     });
 
+    this.setState({ disabled: true })
     event.preventDefault()
   }
 
   handleOpen() {
     this.setState({ open: true })
   }
+
   handleClose() {
-    this.setState({ open: false })
+    this.setState({ open: false, disabled: false })
   }
 
   render() {
@@ -161,8 +184,8 @@ class DataForm extends React.Component {
       <Container maxWidth="sm">
         <Box my={4}>
           <Typography variant="h4" component="h1" gutterBottom>
-            Donate to Raiffeisen
-        </Typography>
+            {"Donate to " + "Raiffeisen"}
+          </Typography>
 
           {/* Form */}
           <FormGroup>
@@ -173,27 +196,39 @@ class DataForm extends React.Component {
               <Input id="pan" pattern=".{16,19}" required aria-describedby="pan" onChange={this.handleChangePan} />
               <InputLabel htmlFor="pan">Enter your PAN (16 or 19 digits)</InputLabel>
 
-              <Input helperText="your internet PIN" pattern=".{4}" required type="password" id="pin" aria-describedby="pin" onChange={this.handleChangePin} />
+              <Input pattern=".{4}" required type="password" id="pin" aria-describedby="pin" onChange={this.handleChangePin} />
               <InputLabel htmlFor="pin">Enter your PIN</InputLabel>
 
-              <Input id="expDate" pattern=".{4}" required aria-describedby="expDate" onChange={this.handleChangeExpDate} />
+              {/* <Input type="data" id="expDate" pattern=".{4}" required aria-describedby="expDate" onChange={this.handleChangeExpDate} /> */}
+              <MuiPickersUtilsProvider utils={MomentUtils}>
+                <KeyboardDatePicker
+
+                  disableToolbar
+                  variant="inline"
+                  format="YYYY/MM"
+                  margin="normal"
+                  id="expDate"
+                  label="Date picker inline"
+                  value={this.state.selectedMoment}
+                  onChange={this.handleChangeExpDate}
+                />
+              </MuiPickersUtilsProvider>
+
               <InputLabel htmlFor="expDate">Enter your expDate</InputLabel>
 
               <Input type="number" step="0.01" id="amount" aria-describedby="amount" onChange={this.handleChangeAmount} />
               <InputLabel htmlFor="amount">How much you will pay</InputLabel>
 
-              <Button type="submit" variant="contained" color="primary">
-                If i work
-            </Button>
+              <br></br>
+              <Button disabled={this.state.disabled} type="submit" variant="contained" color="primary" startIcon={<PaymentIcon />}>
+                {"Pay " + this.state.amount + "$"}
+              </Button>
 
             </form>
           </FormGroup>
 
-
-
           {this.state.error &&
-
-            <div>
+            < div >
               <p onChange={this.handleChange}>There is an error: <b>{this.state.message}</b></p>
               <Dialog
                 open={this.state.open}
@@ -216,7 +251,7 @@ class DataForm extends React.Component {
           }
 
         </Box>
-      </Container>
+      </Container >
 
     );
   }
