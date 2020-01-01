@@ -6,14 +6,19 @@ import App from './App';
 import theme from './theme';
 import Details from "./details"
 import Divider from "@material-ui/core/Divider"
+import LocalRouter from "./routes"
+import Bar from "./bar"
 
 ReactDOM.render(
   <ThemeProvider theme={theme}>
+    <Bar />
     {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
     <CssBaseline />
-    <App />
+    {/* <App /> */}
     <Divider />
+    <LocalRouter />
     <Details />
+
   </ThemeProvider>,
   document.querySelector('#root'),
 );

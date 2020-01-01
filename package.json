@@ -19,6 +19,7 @@
     "react": "latest",
     "react-dom": "latest",
     "react-moment": "^0.9.7",
+    "react-router-dom": "^5.1.2",
     "react-scripts": "latest",
     "uuid": "^3.3.3"
   },

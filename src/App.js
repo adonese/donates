@@ -203,7 +203,6 @@ class DataForm extends React.Component {
               {/* <Input type="data" id="expDate" pattern=".{4}" required aria-describedby="expDate" onChange={this.handleChangeExpDate} /> */}
               <MuiPickersUtilsProvider utils={MomentUtils}>
                 <KeyboardDatePicker
-
                   disableToolbar
                   variant="inline"
                   format="YYYY/MM"
@@ -216,22 +215,22 @@ class DataForm extends React.Component {
               </MuiPickersUtilsProvider>
 
               <InputLabel htmlFor="expDate">Enter your expDate</InputLabel>
-
               <Input type="number" step="0.01" id="amount" aria-describedby="amount" onChange={this.handleChangeAmount} />
               <InputLabel htmlFor="amount">How much you will pay</InputLabel>
 
               {/* Select Donor */}
-              <InputLabel htmlFor="donors">Select your donor (or Project)</InputLabel>
               <NativeSelect
                 id="donors"
                 value={this.state.toCard}
                 onChange={this.handleChangeDonors}
               >
-                <option value="" />
+                <option value="destination" />
                 <option value={"9222 - 10"}>Raiffeisin</option>
                 <option value={"9222 - 20"}>Eng</option>
                 <option value={"9222 - 30"}>Solus</option>
               </NativeSelect>
+              <InputLabel htmlFor="donors">Select your donor (or Project)</InputLabel>
+
               <br></br>
               <Button disabled={this.state.disabled} type="submit" variant="contained" color="primary" startIcon={<PaymentIcon />}>
                 {"Pay " + this.state.amount + "$"}
