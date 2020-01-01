@@ -19,6 +19,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import PaymentIcon from '@material-ui/icons/Payment';
 import MomentUtils from '@date-io/moment';
 import moment from '@date-io/moment';
+import NativeSelect from '@material-ui/core/NativeSelect';
 
 import { Button } from '@material-ui/core';
 import {
@@ -52,10 +53,6 @@ class DataForm extends React.Component {
     this.setState({ pin: event.target.value });
   }
 
-  handleChangeDonors(event) {
-    // handle donors here
-    this.setState({ toCard: event.target.value });
-  }
   handleChangePan(event) {
     this.setState({ pan: event.target.value });
   }
@@ -70,6 +67,10 @@ class DataForm extends React.Component {
     this.setState({ amount: event.target.value });
   }
 
+  handleChangeDonors(event) {
+    console.log("the value is: ", event.target.value)
+    this.setState({ toCard: event.target.value });
+  }
 
   setKey() {
     console.log("the state is ", this.state)
@@ -219,6 +220,18 @@ class DataForm extends React.Component {
               <Input type="number" step="0.01" id="amount" aria-describedby="amount" onChange={this.handleChangeAmount} />
               <InputLabel htmlFor="amount">How much you will pay</InputLabel>
 
+              {/* Select Donor */}
+              <InputLabel htmlFor="donors">Select your donor (or Project)</InputLabel>
+              <NativeSelect
+                id="donors"
+                value={this.state.toCard}
+                onChange={this.handleChangeDonors}
+              >
+                <option value="" />
+                <option value={"9222 - 10"}>Raiffeisin</option>
+                <option value={"9222 - 20"}>Eng</option>
+                <option value={"9222 - 30"}>Solus</option>
+              </NativeSelect>
               <br></br>
               <Button disabled={this.state.disabled} type="submit" variant="contained" color="primary" startIcon={<PaymentIcon />}>
                 {"Pay " + this.state.amount + "$"}
