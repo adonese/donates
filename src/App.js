@@ -10,6 +10,12 @@ import FormHelperText from "@material-ui/core/FormControl"
 import uuid from 'uuid';
 import JSencrypt from "jsencrypt";
 
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+
 import { Button } from '@material-ui/core';
 
 class DataForm extends React.Component {
@@ -20,7 +26,7 @@ class DataForm extends React.Component {
       username: '',
       error: false,
       message: '',
-      pin: "", pan: "", amount: "", expDate: ""
+      pin: "", pan: "", amount: "", expDate: "", open: true,
     };
 
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -28,7 +34,9 @@ class DataForm extends React.Component {
     this.handleChangeAmount = this.handleChangeAmount.bind(this);
     this.handleChangeExpDate = this.handleChangeExpDate.bind(this);
     this.handleChangePan = this.handleChangePan.bind(this);
+    this.handleClose = this.handleClose.bind(this);
   }
+
 
   handleChangePin(event) {
     this.setState({ pin: event.target.value });
@@ -128,12 +136,24 @@ class DataForm extends React.Component {
       error.json().then((body) => {
         //Here is already the payload from API
         console.log(body);
-        this.setState({ message: body.error, error: true, username: null });
+        if (error.status > 500) {
+          this.setState({ message: body.details.responseMessage, error: true, username: null });
+        } else {
+          this.setState({ message: body.message, error: true, username: null });
+
+        }
       });
       // this.setState({error: true, message: error.message})
     });
 
     event.preventDefault()
+  }
+
+  handleOpen() {
+    this.setState({ open: true })
+  }
+  handleClose() {
+    this.setState({ open: false })
   }
 
   render() {
@@ -150,29 +170,50 @@ class DataForm extends React.Component {
               <Input id="email" aria-describedby="email" onChange={this.handleChangePin} />
               <InputLabel htmlFor="email">Email address</InputLabel>
 
-              <Input id="pan" aria-describedby="pan" onChange={this.handleChangePan} />
+              <Input id="pan" pattern=".{16,19}" required aria-describedby="pan" onChange={this.handleChangePan} />
               <InputLabel htmlFor="pan">Enter your PAN (16 or 19 digits)</InputLabel>
 
-              <Input id="pin" aria-describedby="pin" onChange={this.handleChangePin} />
+              <Input helperText="your internet PIN" pattern=".{4}" required type="password" id="pin" aria-describedby="pin" onChange={this.handleChangePin} />
               <InputLabel htmlFor="pin">Enter your PIN</InputLabel>
 
-              <Input id="expDate" aria-describedby="expDate" onChange={this.handleChangeExpDate} />
+              <Input id="expDate" pattern=".{4}" required aria-describedby="expDate" onChange={this.handleChangeExpDate} />
               <InputLabel htmlFor="expDate">Enter your expDate</InputLabel>
 
               <Input type="number" step="0.01" id="amount" aria-describedby="amount" onChange={this.handleChangeAmount} />
               <InputLabel htmlFor="amount">How much you will pay</InputLabel>
 
-              <Button type="submit">
+              <Button type="submit" variant="contained" color="primary">
                 If i work
             </Button>
+
             </form>
           </FormGroup>
 
 
-          {/* 
+
           {this.state.error &&
-            <p onChange={this.handleChange}>There is an error: <b>{this.state.message}</b></p>
-          } */}
+
+            <div>
+              <p onChange={this.handleChange}>There is an error: <b>{this.state.message}</b></p>
+              <Dialog
+                open={this.state.open}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+              >
+                <DialogTitle id="alert-dialog-title">{"Response Message"}</DialogTitle>
+                <DialogContent>
+                  <DialogContentText id="alert-dialog-description">
+                    {this.state.message}
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button color="primary" onClick={this.handleClose}>
+                    Close
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </div>
+          }
 
         </Box>
       </Container>
