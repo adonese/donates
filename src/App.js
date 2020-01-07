@@ -208,7 +208,7 @@ class DataForm extends React.Component {
                   format="YYYY/MM"
                   margin="normal"
                   id="expDate"
-                  label="Date picker inline"
+                  label="Please select expiration date"
                   value={this.state.selectedMoment}
                   onChange={this.handleChangeExpDate}
                 />
