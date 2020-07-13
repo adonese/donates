@@ -73,7 +73,6 @@ class DataForm extends React.Component {
   }
 
   setKey() {
-    console.log("the state is ", this.state)
     fetch('https://beta.soluspay.net/api/consumer/key', {
       method: 'POST',
       headers: {
@@ -94,9 +93,9 @@ class DataForm extends React.Component {
       })
       .then((data) => {
         console.log("the public key is", data.ebs_response.pubKeyValue)
-        if (localStorage.getItem("key") != null) {
+        
           localStorage.setItem("key", data.ebs_response.pubKeyValue)
-        }
+    
       })
       .catch(error => {
         console.log('error: ' + error);
@@ -108,6 +107,7 @@ class DataForm extends React.Component {
 
   generateIPin(pin, key) {
     // do something
+    console.log("the key is: ", key)
     let id = uuid.v4()
     let jsencrypt = new JSencrypt();
     jsencrypt.setPublicKey(key);
@@ -185,7 +185,7 @@ class DataForm extends React.Component {
       <Container maxWidth="sm">
         <Box my={4}>
           <Typography variant="h4" component="h1" gutterBottom>
-            {"Donate to " + "Raiffeisen"}
+            {"Sahil Wallet"}
           </Typography>
 
           {/* Form */}
