@@ -12,9 +12,10 @@ export default function LocalRouter() {
         <Router>
             <div>
                 <Switch>
-                    <Route exact path="/">
+                    {/* <Route path="/wallet/:id">
                         <App />
-                    </Route>
+                    </Route> */}
+                    <Route path="/wallet/:id" render={(props) => <App {...props}/>}/>
                     <Route path="/faq">
                         <FAQ />
                     </Route>

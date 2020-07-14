@@ -36,6 +36,7 @@ class DataForm extends React.Component {
       username: '',
       error: false,
       message: '',
+      id: this.props.match.params.id,
       pin: "", pan: "", amount: "", expDate: "", open: true, disabled: false, selectedMoment: this.props.value
     };
 
@@ -118,13 +119,13 @@ class DataForm extends React.Component {
 
   handleSubmit(event) {
     // event.preventDefault();
+    console.log("The params are: ", this.state.id)
     if (!localStorage.getItem("key")) {
       this.setKey()
     }
 
     let key = localStorage.getItem("key")
     const [ipin, id] = this.generateIPin(this.state.pin, key)
-
 
     // console.log('A name was submitted: ' + data.data);
     fetch('https://beta.soluspay.net/api/consumer/p2p', {
@@ -143,6 +144,7 @@ class DataForm extends React.Component {
         "tranAmount": parseFloat(this.state.amount),
         "toCard": "3333333333333333333",
         "tranCurrencyCode": "SDG",
+        "id": this.state.id,
       })
     }).then((response) => {
       if (!response.ok) {
