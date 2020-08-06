@@ -28,6 +28,8 @@ import {
   KeyboardDatePicker,
 } from '@material-ui/pickers';
 
+const qs = require('query-string');
+
 class DataForm extends React.Component {
   constructor(props) {
     super(props);
@@ -36,10 +38,14 @@ class DataForm extends React.Component {
       username: '',
       error: false,
       message: '',
-      id: this.props.match.params.id,
+      id: qs.parse(window.location.search, {ignoreQueryPrefix: true})["id"],
       pin: "", pan: "", amount: "", expDate: "", open: true, disabled: false, selectedMoment: this.props.value
     };
 
+    // console.log("the id is: ", id)
+    // console.log("the id parsed is: ", id["q"])
+    console.log("the query param is: ", this.state.id)
+    // console.log("the query param is: ", this.state.id["q"])
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChangePin = this.handleChangePin.bind(this);
     this.handleChangeAmount = this.handleChangeAmount.bind(this);
@@ -57,13 +63,15 @@ class DataForm extends React.Component {
   handleChangePan(event) {
     this.setState({ pan: event.target.value });
   }
+
   handleChangeExpDate(date) {
     // console.log("the date is ", date.month())
     let m = date.format("YYMM")
     console.log("the wanted date is: ", m)
-    this.setState({ expDate: date, selectedMoment: date });
+    this.setState({ expDate: m, selectedMoment: date });
     console.log("the selected date is", date)
   }
+  
   handleChangeAmount(event) {
     this.setState({ amount: event.target.value });
   }
@@ -128,12 +136,11 @@ class DataForm extends React.Component {
     const [ipin, id] = this.generateIPin(this.state.pin, key)
 
     // console.log('A name was submitted: ' + data.data);
-    fetch('https://beta.soluspay.net/api/consumer/p2p', {
+    fetch('https://beta.soluspay.net/api/v1/payment/121', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-
       body: JSON.stringify({
         "applicationId": "ACTSCon",
         "tranDateTime": "191230142400",
@@ -142,7 +149,7 @@ class DataForm extends React.Component {
         "IPIN": ipin,
         "expDate": this.state.expDate,
         "tranAmount": parseFloat(this.state.amount),
-        "toCard": "3333333333333333333",
+        "serviceProviderId": "0010060207",
         "tranCurrencyCode": "SDG",
         "id": this.state.id,
       })

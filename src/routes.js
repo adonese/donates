@@ -16,6 +16,7 @@ export default function LocalRouter() {
                         <App />
                     </Route> */}
                     <Route path="/wallet/:id" render={(props) => <App {...props}/>}/>
+                    <Route path="/" render={(props) => <App {...props}/>}/>
                     <Route path="/faq">
                         <FAQ />
                     </Route>
