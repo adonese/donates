@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
@@ -27,8 +27,11 @@ import {
   KeyboardTimePicker,
   KeyboardDatePicker,
 } from '@material-ui/pickers';
+import { Redirect, useHistory } from 'react-router-dom';
 
 const qs = require('query-string');
+
+// const [responseHooks, setResponse] = useState();
 
 class DataForm extends React.Component {
   constructor(props) {
@@ -37,9 +40,11 @@ class DataForm extends React.Component {
       value: '',
       username: '',
       error: false,
+      success: false,
       message: '',
+      passedAmount: qs.parse(window.location.search, {ignoreQueryPrefix: true})["amount"],
       id: qs.parse(window.location.search, {ignoreQueryPrefix: true})["id"],
-      pin: "", pan: "", amount: "", expDate: "", open: true, disabled: false, selectedMoment: this.props.value
+      pin: "", pan: "", amount: this.passedAmount, expDate: "", open: true, disabled: false, selectedMoment: this.props.value
     };
 
     // console.log("the id is: ", id)
@@ -136,7 +141,7 @@ class DataForm extends React.Component {
     const [ipin, id] = this.generateIPin(this.state.pin, key)
 
     // console.log('A name was submitted: ' + data.data);
-    fetch('https://beta.soluspay.net/api/v1/payment/121', {
+    fetch('https://beta.soluspay.net/api/v1/payment/'+this.state.id, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -148,7 +153,7 @@ class DataForm extends React.Component {
         "PAN": this.state.pan,
         "IPIN": ipin,
         "expDate": this.state.expDate,
-        "tranAmount": parseFloat(this.state.amount),
+        "tranAmount": parseFloat(this.state.passedAmount),
         "serviceProviderId": "0010060207",
         "tranCurrencyCode": "SDG",
         "id": this.state.id,
@@ -158,22 +163,39 @@ class DataForm extends React.Component {
         // return response.then(Promise.reject.bind(Promise))
         throw response
       }
-      return response.json();
+      return response.json()
     }).then((data) => {
-      this.setState({ approval: data.responseMessage, error: false });
-      console.log("the data is", data)
+      // setResponse(data)
+      this.props.history.push('/success', { message: data.ebs_response.responseMessage, code:data.ebs_response.responsecode })
+      this.setState({ success: true, message: data.ebs_response.responseMessage, approval: data.ebs_response.responseMessage, error: false });
+      console.log("the data is", data.ebs_response)
     }).catch(error => {
       console.log('error: ' + error);
-      error.json().then((body) => {
-        //Here is already the payload from API
-        console.log(body);
-        if (error.status > 500) {
-          this.setState({ message: body.details.responseMessage, error: true, username: null });
-        } else {
-          this.setState({ message: body.message, error: true, username: null });
+      if (error.status >= 400||error.status>=500){
+        error.json().then((body) => {
+          //Here is already the payload from API
+          this.props.history.push('/fail', { message: body.message, code: body.code })
+          // this.props.history.push({
+          //   pathname: '/fail',
+          //   state: {
+          //     id: 7,
+          //     color: 'green'
+          //   }
+          // })
+         
+          console.log(body);
+          if (error.status > 500) {
+            this.props.history.push('/fail', { message: body.details.responseMessage, code: body.details.responseCode })
+            this.setState({ message: body.details.responseMessage, error: true, username: null });
+          } else {
+            this.setState({ message: body.message, error: true, username: null });
+            console.log("the message is: ", this.state.message);
+          }
+        });
+      }else{
+        this.setState({ message: "network error", error: true, username: null });
+      }
 
-        }
-      });
       // this.setState({error: true, message: error.message})
     });
 
@@ -200,8 +222,6 @@ class DataForm extends React.Component {
           {/* Form */}
           <FormGroup>
             <form onSubmit={this.handleSubmit}>
-              <Input id="email" aria-describedby="email" onChange={this.handleChangePin} />
-              <InputLabel htmlFor="email">Email address</InputLabel>
 
               <Input id="pan" pattern=".{16,19}" required aria-describedby="pan" onChange={this.handleChangePan} />
               <InputLabel htmlFor="pan">Enter your PAN (16 or 19 digits)</InputLabel>
@@ -224,33 +244,49 @@ class DataForm extends React.Component {
               </MuiPickersUtilsProvider>
 
               <InputLabel htmlFor="expDate">Enter your expDate</InputLabel>
-              <Input type="number" step="0.01" id="amount" aria-describedby="amount" onChange={this.handleChangeAmount} />
-              <InputLabel htmlFor="amount">How much you will pay</InputLabel>
-
-              {/* Select Donor */}
-              <NativeSelect
-                id="donors"
-                value={this.state.toCard}
-                onChange={this.handleChangeDonors}
-              >
-                <option value="destination" />
-                <option value={"9222 - 10"}>Raiffeisin</option>
-                <option value={"9222 - 20"}>Eng</option>
-                <option value={"9222 - 30"}>Solus</option>
-              </NativeSelect>
-              <InputLabel htmlFor="donors">Select your donor (or Project)</InputLabel>
+              
+              <Input type="number" step="0.01" id="amount" aria-describedby="amount" disabled value={this.state.passedAmount} />
+              <InputLabel htmlFor="amount">Is deduced from you</InputLabel>
 
               <br></br>
               <Button disabled={this.state.disabled} type="submit" variant="contained" color="primary" startIcon={<PaymentIcon />}>
-                {"Pay " + this.state.amount + "$"}
+                {"Pay " + this.state.passedAmount + "$"}
               </Button>
 
             </form>
           </FormGroup>
 
           {this.state.error &&
-            < div >
+          
+            <div>
+
+              <Redirect to="/fail" theme={this.state.message}/>
               <p onChange={this.handleChange}>There is an error: <b>{this.state.message}</b></p>
+              <Dialog
+                open={this.state.open}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+              >
+                <DialogTitle id="alert-dialog-title">{"Response Message"}</DialogTitle>
+                <DialogContent>
+                  <DialogContentText id="alert-dialog-description">
+                    {this.state.message}
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button color="primary" onClick={this.handleClose}>
+                    Close
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </div>
+          }
+
+
+{this.state.success &&
+            < div >
+            <Redirect to="/success"/>
+              <p onChange={this.handleChange}>Successful response <b>{this.state.message}</b></p>
               <Dialog
                 open={this.state.open}
                 aria-labelledby="alert-dialog-title"

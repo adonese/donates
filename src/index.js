@@ -17,7 +17,6 @@ ReactDOM.render(
     {/* <App /> */}
     <Divider />
     <LocalRouter />
-    <Details />
 
   </ThemeProvider>,
   document.querySelector('#root'),
