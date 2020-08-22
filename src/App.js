@@ -44,6 +44,7 @@ class DataForm extends React.Component {
       message: '',
       passedAmount: qs.parse(window.location.search, {ignoreQueryPrefix: true})["amount"],
       id: qs.parse(window.location.search, {ignoreQueryPrefix: true})["id"],
+      token: qs.parse(window.location.search, {ignoreQueryPrefix: true})["token"],
       pin: "", pan: "", amount: this.passedAmount, expDate: "", open: true, disabled: false, selectedMoment: this.props.value
     };
 
@@ -141,7 +142,7 @@ class DataForm extends React.Component {
     const [ipin, id] = this.generateIPin(this.state.pin, key)
 
     // console.log('A name was submitted: ' + data.data);
-    fetch('https://beta.soluspay.net/api/v1/payment/'+this.state.id, {
+    fetch('https://beta.soluspay.net/api/v1/payment/sahil'+`?id=${this.state.id}&token=${this.state.token}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
