@@ -17,6 +17,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import PaymentIcon from '@material-ui/icons/Payment';
+import CancelIcon from "@material-ui/icons/Cancel"
 import MomentUtils from '@date-io/moment';
 import moment from '@date-io/moment';
 import NativeSelect from '@material-ui/core/NativeSelect';
@@ -59,6 +60,7 @@ class DataForm extends React.Component {
     this.handleChangePan = this.handleChangePan.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.handleChangeDonors = this.handleChangeDonors.bind(this);
+    this.cancel = this.cancel(this);
   }
 
 
@@ -142,8 +144,8 @@ class DataForm extends React.Component {
     const [ipin, id] = this.generateIPin(this.state.pin, key)
 
     // console.log('A name was submitted: ' + data.data);
-    fetch('https://beta.soluspay.net/api/v1/payment/sahil'+`?id=${this.state.id}&token=${this.state.token}`, {
-      method: 'POST',
+    fetch('https://beta.soluspay.net/api/v1/payment/sahil'+`?id=${this.state.id}&token=${this.state.token}&to="http://localhost:7327"`, {
+      method: 'POST', redirect:"follow",
       headers: {
         'Content-Type': 'application/json'
       },
@@ -164,10 +166,13 @@ class DataForm extends React.Component {
         // return response.then(Promise.reject.bind(Promise))
         throw response
       }
-      return response.json()
+      if (response.redirected){
+        window.location.href = response.url;
+      }
+      // return response.json()
     }).then((data) => {
       // setResponse(data)
-      this.props.history.push('/success', { message: data.ebs_response.responseMessage, code:data.ebs_response.responsecode })
+      // this.props.history.push('/success', { message: data.ebs_response.responseMessage, code:data.ebs_response.responsecode })
       this.setState({ success: true, message: data.ebs_response.responseMessage, approval: data.ebs_response.responseMessage, error: false });
       console.log("the data is", data.ebs_response)
     }).catch(error => {
@@ -175,7 +180,7 @@ class DataForm extends React.Component {
       if (error.status >= 400||error.status>=500){
         error.json().then((body) => {
           //Here is already the payload from API
-          this.props.history.push('/fail', { message: body.message, code: body.code })
+          // this.props.history.push('/fail', { message: body.message, code: body.code })
           // this.props.history.push({
           //   pathname: '/fail',
           //   state: {
@@ -186,7 +191,7 @@ class DataForm extends React.Component {
          
           console.log(body);
           if (error.status > 500) {
-            this.props.history.push('/fail', { message: body.details.responseMessage, code: body.details.responseCode })
+            // this.props.history.push('/fail', { message: body.details.responseMessage, code: body.details.responseCode })
             this.setState({ message: body.details.responseMessage, error: true, username: null });
           } else {
             this.setState({ message: body.message, error: true, username: null });
@@ -206,6 +211,22 @@ class DataForm extends React.Component {
 
   handleOpen() {
     this.setState({ open: true })
+  }
+
+  cancel() {
+    // let uuid = this.id;
+    // console.log(uuid);
+    fetch(`https://beta.soluspay.net/api/v1/cancel?id=${this.state.token}`, {
+      method: 'POST', redirect:"follow",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        "uuid": uuid,
+      })
+    }).then((response) => {
+      console.log("response is: ", response)
+    })
   }
 
   handleClose() {
@@ -252,6 +273,15 @@ class DataForm extends React.Component {
               <br></br>
               <Button disabled={this.state.disabled} type="submit" variant="contained" color="primary" startIcon={<PaymentIcon />}>
                 {"Pay " + this.state.passedAmount + "$"}
+
+
+              </Button>
+
+<br/><br/>
+              <Button disabled={this.state.disabled} variant="contained" color="red" startIcon={<CancelIcon />} onClick={this.cancel}>
+                {"Cancel Transaction"}
+
+                
               </Button>
 
             </form>
@@ -261,7 +291,7 @@ class DataForm extends React.Component {
           
             <div>
 
-              <Redirect to="/fail" theme={this.state.message}/>
+              {/* <Redirect to="/fail" theme={this.state.message}/> */}
               <p onChange={this.handleChange}>There is an error: <b>{this.state.message}</b></p>
               <Dialog
                 open={this.state.open}
@@ -286,7 +316,7 @@ class DataForm extends React.Component {
 
 {this.state.success &&
             < div >
-            <Redirect to="/success"/>
+            {/* <Redirect to="/success"/> */}
               <p onChange={this.handleChange}>Successful response <b>{this.state.message}</b></p>
               <Dialog
                 open={this.state.open}

@@ -12,6 +12,7 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import { useHistory } from 'react-router-dom';
+const qs = require('query-string');
 
 class Fail extends React.Component {
   
@@ -22,7 +23,7 @@ class Fail extends React.Component {
 
           < div >
 
-            <p>{this.props.location.state.message}
+            <p>{qs.parse(window.location.search, {ignoreQueryPrefix: true})["id"]}
             </p>
             <TableContainer component={Paper}>
     <h3>Successful Response</h3>
@@ -35,8 +36,8 @@ class Fail extends React.Component {
         </TableHead>
         <TableBody>
             <TableRow key="key">
-              <TableCell >{this.props.location.state.message}</TableCell>
-              <TableCell >{this.props.location.state.code}</TableCell>
+              <TableCell >{qs.parse(window.location.search, {ignoreQueryPrefix: true})["code"]}</TableCell>
+              <TableCell >{qs.parse(window.location.search, {ignoreQueryPrefix: true})["code"]}</TableCell>
             </TableRow>
 
         </TableBody>

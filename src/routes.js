@@ -21,10 +21,19 @@ export default function LocalRouter() {
                     <Success />
                 </Route> */}
 
+                {/* <Route path="/" render={(props) => <Fail {...props} />} />
+                <Route path="/success" render={(props) => <Fail {...props} />} />
+                <Route path="/wallet/:id" render={(props) => <App {...props} />} /> */}
+                {/* <Route path="/" render={(props) => <App {...props} />} /> */}
+
+
+
                 <Route path="/fail" render={(props) => <Fail {...props} />} />
                 <Route path="/success" render={(props) => <Fail {...props} />} />
                 <Route path="/wallet/:id" render={(props) => <App {...props} />} />
                 <Route path="/" render={(props) => <App {...props} />} />
+                <Route path="/*" render={() => <Fail /* possible prop injection */ />}/>
+
 
 
             </Switch>

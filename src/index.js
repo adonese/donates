@@ -8,6 +8,7 @@ import Details from "./details"
 import Divider from "@material-ui/core/Divider"
 import LocalRouter from "./routes"
 import Bar from "./bar"
+import Fail from './fail';
 
 ReactDOM.render(
   <ThemeProvider theme={theme}>
@@ -17,6 +18,7 @@ ReactDOM.render(
     {/* <App /> */}
     <Divider />
     <LocalRouter />
+    {/* <App  /> */}
 
   </ThemeProvider>,
   document.querySelector('#root'),
