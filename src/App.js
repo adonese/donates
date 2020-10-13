@@ -1,13 +1,9 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
-import Link from '@material-ui/core/Link';
-import ProTip from './ProTip';
 import FormGroup from "@material-ui/core/FormGroup"
-import { Input, InputLabel, TextField } from "@material-ui/core"
-import Select from '@material-ui/core/Select';
-import FormHelperText from "@material-ui/core/FormControl"
+import { Input, InputLabel } from "@material-ui/core"
 import uuid from 'uuid';
 import JSencrypt from "jsencrypt";
 
@@ -19,18 +15,20 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import PaymentIcon from '@material-ui/icons/Payment';
 import CancelIcon from "@material-ui/icons/Cancel"
 import MomentUtils from '@date-io/moment';
-import moment from '@date-io/moment';
-import NativeSelect from '@material-ui/core/NativeSelect';
+import Switch from '@material-ui/core/Switch';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+
+import i18n from "./i18n";
 
 import { Button } from '@material-ui/core';
 import {
   MuiPickersUtilsProvider,
-  KeyboardTimePicker,
   KeyboardDatePicker,
 } from '@material-ui/pickers';
-import { Redirect, useHistory } from 'react-router-dom';
 
 const qs = require('query-string');
+
+
 
 // const [responseHooks, setResponse] = useState();
 
@@ -38,21 +36,28 @@ class DataForm extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      lang: 1,
       value: '',
       username: '',
       error: false,
       success: false,
       message: '',
-      passedAmount: qs.parse(window.location.search, {ignoreQueryPrefix: true})["amount"],
-      id: qs.parse(window.location.search, {ignoreQueryPrefix: true})["id"],
-      token: qs.parse(window.location.search, {ignoreQueryPrefix: true})["token"],
-      pin: "", pan: "", amount: this.passedAmount, expDate: "", open: true, disabled: false, selectedMoment: this.props.value
+
+
+      passedAmount: qs.parse(window.location.search, { ignoreQueryPrefix: true })["amount"],
+      id: qs.parse(window.location.search, { ignoreQueryPrefix: true })["id"],
+      token: qs.parse(window.location.search, { ignoreQueryPrefix: true })["token"],
+
+
+      pin: "",
+      pan: "",
+      amount: this.passedAmount,
+      expDate: "",
+      open: true,
+      disabled: false,
+      selectedMoment: this.props.value
     };
 
-    // console.log("the id is: ", id)
-    // console.log("the id parsed is: ", id["q"])
-    console.log("the query param is: ", this.state.id)
-    // console.log("the query param is: ", this.state.id["q"])
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChangePin = this.handleChangePin.bind(this);
     this.handleChangeAmount = this.handleChangeAmount.bind(this);
@@ -60,7 +65,8 @@ class DataForm extends React.Component {
     this.handleChangePan = this.handleChangePan.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.handleChangeDonors = this.handleChangeDonors.bind(this);
-    this.cancel = this.cancel(this);
+    this.handleCancel = this.handleCancel.bind(this);
+    this.handleLanguage = this.handleLanguage.bind(this);
   }
 
 
@@ -73,13 +79,12 @@ class DataForm extends React.Component {
   }
 
   handleChangeExpDate(date) {
-    // console.log("the date is ", date.month())
     let m = date.format("YYMM")
     console.log("the wanted date is: ", m)
     this.setState({ expDate: m, selectedMoment: date });
     console.log("the selected date is", date)
   }
-  
+
   handleChangeAmount(event) {
     this.setState({ amount: event.target.value });
   }
@@ -110,9 +115,9 @@ class DataForm extends React.Component {
       })
       .then((data) => {
         console.log("the public key is", data.ebs_response.pubKeyValue)
-        
-          localStorage.setItem("key", data.ebs_response.pubKeyValue)
-    
+
+        localStorage.setItem("key", data.ebs_response.pubKeyValue)
+
       })
       .catch(error => {
         console.log('error: ' + error);
@@ -134,7 +139,7 @@ class DataForm extends React.Component {
   }
 
   handleSubmit(event) {
-    // event.preventDefault();
+    event.preventDefault();
     console.log("The params are: ", this.state.id)
     if (!localStorage.getItem("key")) {
       this.setKey()
@@ -144,8 +149,8 @@ class DataForm extends React.Component {
     const [ipin, id] = this.generateIPin(this.state.pin, key)
 
     // console.log('A name was submitted: ' + data.data);
-    fetch('https://beta.soluspay.net/api/v1/payment/sahil'+`?id=${this.state.id}&token=${this.state.token}&to="http://localhost:7327"`, {
-      method: 'POST', redirect:"follow",
+    fetch('https://beta.soluspay.net/api/v1/payment/sahil' + `?id=${this.state.id}&token=${this.state.token}`, {
+      method: 'POST', redirect: "follow",
       headers: {
         'Content-Type': 'application/json'
       },
@@ -166,7 +171,7 @@ class DataForm extends React.Component {
         // return response.then(Promise.reject.bind(Promise))
         throw response
       }
-      if (response.redirected){
+      if (response.redirected) {
         window.location.href = response.url;
       }
       // return response.json()
@@ -176,19 +181,10 @@ class DataForm extends React.Component {
       this.setState({ success: true, message: data.ebs_response.responseMessage, approval: data.ebs_response.responseMessage, error: false });
       console.log("the data is", data.ebs_response)
     }).catch(error => {
-      console.log('error: ' + error);
-      if (error.status >= 400||error.status>=500){
+      // console.log('error: ' + error.ebs_response);
+      if (error.status >= 400 || error.status >= 500) {
         error.json().then((body) => {
-          //Here is already the payload from API
-          // this.props.history.push('/fail', { message: body.message, code: body.code })
-          // this.props.history.push({
-          //   pathname: '/fail',
-          //   state: {
-          //     id: 7,
-          //     color: 'green'
-          //   }
-          // })
-         
+
           console.log(body);
           if (error.status > 500) {
             // this.props.history.push('/fail', { message: body.details.responseMessage, code: body.details.responseCode })
@@ -198,8 +194,6 @@ class DataForm extends React.Component {
             console.log("the message is: ", this.state.message);
           }
         });
-      }else{
-        this.setState({ message: "network error", error: true, username: null });
       }
 
       // this.setState({error: true, message: error.message})
@@ -213,11 +207,12 @@ class DataForm extends React.Component {
     this.setState({ open: true })
   }
 
-  cancel() {
-    // let uuid = this.id;
-    // console.log(uuid);
+  handleCancel(event) {
+    event.preventDefault();
+    let uuid = this.id;
+    console.log(uuid);
     fetch(`https://beta.soluspay.net/api/v1/cancel?id=${this.state.token}`, {
-      method: 'POST', redirect:"follow",
+      method: 'POST', redirect: "follow",
       headers: {
         'Content-Type': 'application/json'
       },
@@ -226,19 +221,43 @@ class DataForm extends React.Component {
       })
     }).then((response) => {
       console.log("response is: ", response)
+      window.location.href = "https://sahil2.soluspay.net?code=transaction_cancelled"
+      // window.open("", "_self");
+      // window.close();
     })
+
+
   }
 
   handleClose() {
     this.setState({ open: false, disabled: false })
   }
 
+  handleLanguage(event) {
+    let prev  = this.state.lang;
+    this.setState(({ lang:  !prev}));
+    if (prev) {
+      i18n.changeLanguage("ar");
+      return
+    }
+    i18n.changeLanguage("en");
+
+  }
+
   render() {
     return (
       <Container maxWidth="sm">
+
+        <FormControlLabel
+        checked={this.state.lang}
+          control={<Switch onChange={this.handleLanguage} />}
+          label={i18n.t("language")}
+        />
+
+
         <Box my={4}>
           <Typography variant="h4" component="h1" gutterBottom>
-            {"Sahil Wallet"}
+            {i18n.t("name")}
           </Typography>
 
           {/* Form */}
@@ -246,10 +265,10 @@ class DataForm extends React.Component {
             <form onSubmit={this.handleSubmit}>
 
               <Input id="pan" pattern=".{16,19}" required aria-describedby="pan" onChange={this.handleChangePan} />
-              <InputLabel htmlFor="pan">Enter your PAN (16 or 19 digits)</InputLabel>
+              <InputLabel htmlFor="pan">{i18n.t("pan")}</InputLabel>
 
               <Input pattern=".{4}" required type="password" id="pin" aria-describedby="pin" onChange={this.handleChangePin} />
-              <InputLabel htmlFor="pin">Enter your PIN</InputLabel>
+              <InputLabel htmlFor="pin">{i18n.t("pin")}</InputLabel>
 
               {/* <Input type="data" id="expDate" pattern=".{4}" required aria-describedby="expDate" onChange={this.handleChangeExpDate} /> */}
               <MuiPickersUtilsProvider utils={MomentUtils}>
@@ -265,30 +284,27 @@ class DataForm extends React.Component {
                 />
               </MuiPickersUtilsProvider>
 
-              <InputLabel htmlFor="expDate">Enter your expDate</InputLabel>
-              
+
+              <InputLabel htmlFor="expDate">{i18n.t("expDate")}</InputLabel>
+
               <Input type="number" step="0.01" id="amount" aria-describedby="amount" disabled value={this.state.passedAmount} />
-              <InputLabel htmlFor="amount">Is deduced from you</InputLabel>
+              <InputLabel htmlFor="amount">{i18n.t("amount")}</InputLabel>
 
               <br></br>
-              <Button disabled={this.state.disabled} type="submit" variant="contained" color="primary" startIcon={<PaymentIcon />}>
+              <Button disabled={this.state.disabled} onClick={this.handleSubmit} variant="contained" color="primary" startIcon={<PaymentIcon />}>
                 {"Pay " + this.state.passedAmount + "$"}
-
-
               </Button>
 
-<br/><br/>
-              <Button disabled={this.state.disabled} variant="contained" color="red" startIcon={<CancelIcon />} onClick={this.cancel}>
-                {"Cancel Transaction"}
-
-                
+              <br /><br />
+              <Button variant="contained" color="red" startIcon={<CancelIcon />} onClick={this.handleCancel}>
+                {i18n.t("cancel")}
               </Button>
 
             </form>
           </FormGroup>
 
           {this.state.error &&
-          
+
             <div>
 
               {/* <Redirect to="/fail" theme={this.state.message}/> */}
@@ -314,10 +330,10 @@ class DataForm extends React.Component {
           }
 
 
-{this.state.success &&
+          {this.state.success &&
             < div >
-            {/* <Redirect to="/success"/> */}
-              <p onChange={this.handleChange}>Successful response <b>{this.state.message}</b></p>
+              {/* <Redirect to="/success"/> */}
+              <p onChange={this.handleChange}>{i18n.t("success")} <b>{this.state.message}</b></p>
               <Dialog
                 open={this.state.open}
                 aria-labelledby="alert-dialog-title"

@@ -1,7 +1,5 @@
 import React from 'react';
-import FAQ from "./faq"
 import App from './App';
-import Success from "./success";
 import {
     BrowserRouter as Router,
     Switch,
